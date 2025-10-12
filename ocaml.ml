@@ -9,7 +9,7 @@ let adj2 = [|
 |]
 
 let test = "coucou";
-
+grgrgrgrgr
 type 'a stack =
   {
     mutable data: 'a list;
