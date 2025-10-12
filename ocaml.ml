@@ -100,7 +100,7 @@ let parcours_profondeurp(graphe,s) =
   done;;
 
 
-let parcours_profondeur1 (graphe, s) =
+let parcours_profondeur (graphe, s) =
   let etats = Array.make (Array.length graphe) false in
 
   let rec parcours_profondeur2 (graphe, s) =
@@ -123,11 +123,33 @@ let parcours_profondeur1 (graphe, s) =
   parcours_profondeur2 (graphe, s)
 ;;
 
-    
 
-  
-
-
+let tri_topologique (graphe, s) =
+  let etats = Array.make (Array.length graphe) false in
+  let date = Array.make (Array.length graphe) 0 in
+  let temps = ref 0 in
+  let rec parcours_profondeur2 (graphe, s) =
+    etats.(s) <- true;
+      
+    let rec parcour liste =
+      match liste with
+      | t :: r ->
+          if not etats.(t) then (
+            etats.(t) <- true;
+            Printf.printf "\nOn rencontre l'element %d\n" t;
+            parcours_profondeur2 (graphe, t);
+            parcour r
+          ) else
+            parcour r
+      | [] -> ()
+    in
+    parcour graphe.(s) ;
+    temps:= !temps + 1;
+    date.(s) <- !temps;
+  in
+  parcours_profondeur2 (graphe, s) ;
+  date
+;;
 (*parcours_profondeur1(adj2,4);*)
 parcours_profondeurp(adj2,4);
 
