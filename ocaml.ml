@@ -155,22 +155,35 @@ let tri_topologique (graphe) =
     let parcour = parcours_profondeur(graphe,i) in 
     let rec verif (parcour,i) = 
       match parcour with
-      |t::s -> if not etats.(t) then tri_topo(graphe,t) 
+      |t::s -> if not etats.(t) then 
+            begin
+              etats.(t) <- true; 
+              Printf.printf "\nOn fait le tri topo sur  %d\n" t;
+              tri_topo(graphe,t);
+              verif (s,i);
+            end
           else
-            verif (s,i);
-      |[] -> stack_push i tri 
+            begin
+              verif (s,i);
+              Printf.printf "\nOn fait la vérif pour  %d\n" t;
+            end
+      |[] -> 
+          stack_push i tri ;
+          Printf.printf "\nOn ajoute la val à la pile %d\n" i;
+          
     in
     verif (parcour,i);
   
   in 
   for i = 0 to  Array.length graphe - 1 do
+    Printf.printf "\nOn fait le tri topo numero %d\n" i;
     tri_topo(graphe,i); 
   done;
     
   tri
 ;;
 
-
+tri_topologique(graphe);
 
 
 
