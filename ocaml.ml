@@ -1,10 +1,3 @@
-(*git pull origin main
-git add .
-git commit -m "Résolution des conflits"
-git push origin main
-*)
-
-
 
 let adj2 = [|
   [1];
@@ -46,14 +39,7 @@ let queue_to_list q =
   Queue.fold (fun acc x -> acc @ [x]) [] q
 ;;
 
-let p = stack_create();;
-stack_push 3 p;;
-stack_push 4 p;;
-stack_push 5 p;;
 
-let k = stack_top p;;
-stack_pop p;;
-let k = stack_top p;;
 
 let parcours_largeur(graphe,s) =
   
@@ -120,71 +106,66 @@ let parcours_profondeurp(graphe,s) =
   done;;
 
 
-let parcours_profondeur (graphe, s) =
-  let etats = Array.make (Array.length graphe) false in
-  let l = Queue.create () in
-  let rec parcours_profondeur2 (graphe, s) =
-    etats.(s) <- true;
 
-    let rec parcour liste =
-      match liste with
-      | t :: r ->
-          if not etats.(t) then (
-            etats.(t) <- true;
-            Queue.push t l;
-            Printf.printf "\nOn rencontre l'element %d\n" t;
-            parcours_profondeur2 (graphe, t);
-            parcour r
-          ) else
-            parcour r
+let parcours_profondeur (graphe,s) =
+  let n = Array.length graphe in
+  let visited = Array.make n false in
+  let resultat = ref [] in
+
+  (* Fonction récursive interne *)
+  let rec dfs u =
+    visited.(u) <- true;
+    resultat := u :: !resultat;  (* on ajoute u à la liste des visités *)
+
+    (* Parcours explicite des voisins *)
+    let rec explore_voisins voisins =
+      match voisins with
       | [] -> ()
+      | v :: reste ->
+          if not visited.(v) then dfs v;
+          explore_voisins reste
     in
-    parcour graphe.(s)
+    explore_voisins graphe.(u)
   in
-  parcours_profondeur2 (graphe, s);
-  let li = queue_to_list l in 
-  li
+
+  dfs s;
+  List.rev !resultat  (* retourne la liste dans l'ordre de visite *)
 ;;
 
 
-let tri_topologique (graphe) =
-  let etats = Array.make (Array.length graphe) false in 
-  let tri = stack_create() in 
-  
-  let rec tri_topo (graphe,i)= 
-    let parcour = parcours_profondeur(graphe,i) in 
-    let rec verif (parcour,i) = 
-      match parcour with
-      |t::s -> if not etats.(t) then 
-            begin
-              etats.(t) <- true; 
-              Printf.printf "\nOn fait le tri topo sur  %d\n" t;
-              tri_topo(graphe,t);
-              verif (s,i);
-            end
-          else
-            begin
-              verif (s,i);
-              Printf.printf "\nOn fait la vérif pour  %d\n" t;
-            end
-      |[] -> 
-          stack_push i tri ;
-          Printf.printf "\nOn ajoute la val à la pile %d\n" i;
-          
+let tri_topologique graphe =
+  let n = Array.length graphe in
+  let visited = Array.make n false in
+  let tri = ref [] in
+
+  (* Fonction récursive DFS *)
+  let rec parcours_profondeur u =
+    visited.(u) <- true;
+
+    (* Parcours explicite des voisins de u *)
+    let rec explore_voisins voisins =
+      match voisins with
+      | [] -> ()  (* plus de voisins *)
+      | v :: reste ->
+          if not visited.(v) then parcours_profondeur v;
+          explore_voisins reste
     in
-    verif (parcour,i);
-  
-  in 
-  for i = 0 to  Array.length graphe - 1 do
-    Printf.printf "\nOn fait le tri topo numero %d\n" i;
-    tri_topo(graphe,i); 
+
+    explore_voisins graphe.(u);
+
+    (* Une fois tous les voisins explorés, on empile u *)
+    tri := u :: !tri
+  in
+
+  (* On lance DFS sur tous les sommets non visités *)
+  for i = 0 to n - 1 do
+    if not visited.(i) then parcours_profondeur i
   done;
-    
-  tri
+
+  List.rev !tri  (* retourne la liste dans l'ordre de visite *)
 ;;
 
-tri_topologique(graphe);
-
-
-
+(*tri_topologique(adj2);*)
+(*parcours_profondeur(adj2,4);*)
+parcours_profondeurp(adj2,4);
 (*parcours_largeur(adj2,4);*)
