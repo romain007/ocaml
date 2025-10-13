@@ -1,3 +1,11 @@
+(*git pull origin main
+git add .
+git commit -m "Résolution des conflits"
+git push origin main
+*)
+
+
+
 let adj2 = [|
   [1];
   [3];
@@ -8,8 +16,7 @@ let adj2 = [|
   [];
 |]
 
-let test = "coucou";
-grgrgrgrgr
+
 type 'a stack =
   {
     mutable data: 'a list;
@@ -34,6 +41,19 @@ let stack_pop (s:'a stack) =
 let stack_iter f s =
   List.iter f s.data
 ;;
+
+let queue_to_list q =
+  Queue.fold (fun acc x -> acc @ [x]) [] q
+;;
+
+let p = stack_create();;
+stack_push 3 p;;
+stack_push 4 p;;
+stack_push 5 p;;
+
+let k = stack_top p;;
+stack_pop p;;
+let k = stack_top p;;
 
 let parcours_largeur(graphe,s) =
   
@@ -102,7 +122,7 @@ let parcours_profondeurp(graphe,s) =
 
 let parcours_profondeur (graphe, s) =
   let etats = Array.make (Array.length graphe) false in
-
+  let l = Queue.create () in
   let rec parcours_profondeur2 (graphe, s) =
     etats.(s) <- true;
 
@@ -111,6 +131,7 @@ let parcours_profondeur (graphe, s) =
       | t :: r ->
           if not etats.(t) then (
             etats.(t) <- true;
+            Queue.push t l;
             Printf.printf "\nOn rencontre l'element %d\n" t;
             parcours_profondeur2 (graphe, t);
             parcour r
@@ -120,38 +141,34 @@ let parcours_profondeur (graphe, s) =
     in
     parcour graphe.(s)
   in
-  parcours_profondeur2 (graphe, s)
+  parcours_profondeur2 (graphe, s);
+  let li = queue_to_list l in 
+  li
 ;;
 
 
-let tri_topologique (graphe, s) =
-  let etats = Array.make (Array.length graphe) false in
-  let date = Array.make (Array.length graphe) 0 in
-  let temps = ref 0 in
-  let rec parcours_profondeur2 (graphe, s) =
-    etats.(s) <- true;
-      
-    let rec parcour liste =
-      match liste with
-      | t :: r ->
-          if not etats.(t) then (
-            etats.(t) <- true;
-            Printf.printf "\nOn rencontre l'element %d\n" t;
-            parcours_profondeur2 (graphe, t);
-            parcour r
-          ) else
-            parcour r
-      | [] -> ()
+let tri_topologique (graphe) =
+  let etats = Array.make (Array.length graphe) false in 
+  let tri = stack_create() in 
+  
+  let rec tri_topo (graphe,i)= 
+    let parcour = parcours_profondeur(graphe,i) in 
+    let rec verif (parcour,i) = 
+      match parcour with
+      |t::s -> if not etats.(t) then tri_topo(graphe,t) 
+          else
+            verif (s,i);
+      |[] -> stack_push i tri 
     in
-    parcour graphe.(s) ;
-    temps:= !temps + 1;
-    date.(s) <- !temps;
-  in
-  parcours_profondeur2 (graphe, s) ;
-  date
+    verif (parcour,i);
+  
+  in 
+  for i = 0 to  Array.length graphe - 1 do
+    tri_topo(graphe,i); 
+  done;
+    
+  tri
 ;;
-(*parcours_profondeur1(adj2,4);*)
-parcours_profondeurp(adj2,4);
 
 
 
