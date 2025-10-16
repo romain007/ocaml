@@ -356,7 +356,40 @@ let (g:graphe_pondere)= [|
   [(3,3);(4,5);(5,4)] 
 |]
 
-dijkstra g 0 ;;
+let warshall (adj) = 
+  let n = Array.length(adj) in
+  let min a b = 
+    if a = -1 || b = -1 then 
+      if a = -1 then b 
+      else a
+  
+    else
+      begin 
+        if 
+          a<b then a
+        else 
+          b
+      end
+  
+  in 
+  
+  let addition a b = 
+    if a = -1 || b = -1 then 
+      -1
+    else
+      a+b 
+  in 
+  
+  
+  for k = 0 to n-1 do
+    for i = 0 to n-1 do
+      for j = 0 to n-1 do 
+        mat_adj.(i).(j) <- min (mat_adj.(i).(j)) (addition (mat_adj.(i).(k)) (mat_adj.(k).(j)) );
+      done;
+    done;
+  done;
+  
+  mat_adj;;
 
 
 
