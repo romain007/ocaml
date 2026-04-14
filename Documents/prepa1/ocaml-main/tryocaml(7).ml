@@ -289,7 +289,11 @@ let to_list t =
 
 
 
+let resultat = Hashtbl.find_opt ma_table "Ulysse" in
 
+match resultat with
+| Some age -> Printf.printf "Ulysse a %d ans.\n" age
+| None     -> print_endline "Ulysse n'est pas dans la table."
 
 
 

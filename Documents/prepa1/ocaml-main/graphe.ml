@@ -8,12 +8,13 @@ git push origin main
 
 (*Liste d'adjacence non pondérée*)
 let adj2 = [|
-  [1];
-  [3];
-  [0;1];
   [];
-  [2;3;5];
-  [3;6];
+  [2];
+  [4];
+  [1;2];
+  [];
+  [3;4;6];
+  [4,7];
   [];
 |]
 (*Liste d'adjacence pondérée*)
@@ -50,7 +51,8 @@ let stack_create () =
 let stack_is_empty (s:'a stack) =
   s.size = 0 ;;
 let stack_push  (e:'a) (s: 'a stack) =
-  s.data <- e::(s.data); s.size <- s.size+1 ;;
+  s.data <- e::(s.data); 
+  s.size <- s.size+1 ;;
 let stack_top (s:'a stack) =
   List.hd (s.data) ;;
 let stack_pop (s:'a stack) =
@@ -95,6 +97,8 @@ let rec float_assoc a1 l =
   match l with
   | [] -> failwith "file vide"
   | (e1,e2)::s -> if e1 = a1 then e2 else float_assoc a1 s ;;
+
+
 let parcours_largeur(graphe,s) =
   
   (*Liste d'etats pour chaque elements du graphe*)
@@ -121,7 +125,7 @@ let parcours_largeur(graphe,s) =
               Printf.printf "On push l'element %d " t;
               
               Queue.push t q;
-              parcour s;
+
             end;
           parcour s;
 

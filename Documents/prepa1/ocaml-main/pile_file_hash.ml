@@ -11,7 +11,7 @@ let liste = []
 let pile = []
 
 (*File immuable*)
-
+(*On crée et renvoie une nouvelle file à chaque modification*)
 (*Très lent*)
 (*Soit on utilise une liste encore, push : file @ [s], top : List.hd file, pop : s::q*)
 
@@ -21,6 +21,8 @@ type 'a file = {
   entree : 'a list;  (* éléments ajoutés récemment *)
   sortie : 'a list;  (* éléments à retirer en priorité *)
 }
+
+
 let file_vide = { entree = []; sortie = [] }
 let est_vide f =
   f.entree = [] && f.sortie = []
@@ -57,7 +59,8 @@ est_vide f8;;  (* true *)
 (*Liste chainée*)
 (*Tous les élèments doivent etre du meme type donc on crée value qui est un type pouvant contenir plusieurs types*)
 type value = Int of int | Str of string
-                 
+     
+(*On peut modifier directement une valeur avec mutable f.entree <- x :: f.entree; *)
 type 'a cellule = {
   mutable valeur : 'a;
   mutable suivant : 'a cellule option;
@@ -71,8 +74,9 @@ let ajout (liste1 : 'a cellule) (e : 'a) : 'a cellule =
 let c2 : value cellule = {valeur = Int 5; suivant = None} in
 let c3 : value cellule = {valeur = Int 6; suivant = Some(c2)} in
 let c4 : value cellule= {valeur = Int 7; suivant = Some(c3)}  in
+let c5 : value cellule= {valeur = Int 7; suivant = None}  in
 
-
+c5.suivant <- c4;;
 ajout c3 (Str "4");;
 
 (*cellule 10 None*)   (* ❌ Impossible *)
@@ -176,10 +180,30 @@ Printf.printf "%d" (file_top filer);;
 
 
 
+(*Table de hachage*)
+(* 1. Création d'une table avec une taille initiale suggérée de 10 *)
+let ma_table = Hashtbl.create 10
+
+(* 2. Ajouter des éléments (Clé -> Valeur) *)
+
+Hashtbl.add ma_table "Ulysse" 20;
+Hashtbl.add ma_table "Pénélope" 25
+
+(* 3. Rechercher une valeur *)
+let age = Hashtbl.find ma_table "Ulysse" (* Retourne 20 ou lève Not_found *)
+
+(* 4. Version sécurisée (retourne une Option) *)
+let age_opt = Hashtbl.find_opt ma_table "Inconnu" (* Retourne None *)
+
+let age_bool = Hashtbl.mem ma_table "Inconnu" (*renvoie un booléen*)
 
 
-
-
+(*Dictionnaire en ocaml*)
+type ('a,'b) dict =
+{
+mutable data: 'a * 'b list;
+mutable size: int
+} ;;
 
 
 
