@@ -60,3 +60,34 @@ let rec tri_bulle l =
 
 
 ;;
+
+
+let division liste =
+  let n = List.length liste / 2 in
+  let rec div liste n = 
+    match liste with
+    | [] -> ([], []) 
+    | t::s -> if n = 0 then ([],t::s) (* si n = 0, première moitié vide, tout dans la seconde *)
+        else
+          let left, right = div (s) (n-1) in
+          (t :: left, right)
+  in div liste n
+;;
+
+let rec fusion liste1 liste2 = 
+  match liste1,liste2 with 
+  |t1::s1,t2::s2 -> if t2 < t1 then t2 :: fusion (t1::s1) (s2)
+      else t1 :: fusion (s1) (t2::s2)
+  |[],l2 -> l2
+  |l1,[] -> l1
+    
+;;
+
+let rec tri_fusion liste = 
+  let liste1,liste2 = division(liste) in
+  if List.length liste1 = 0 || List.length liste2 = 0 then fusion liste1 liste2
+      
+  else
+    fusion (tri_fusion liste1) (tri_fusion liste2)
+    
+;;

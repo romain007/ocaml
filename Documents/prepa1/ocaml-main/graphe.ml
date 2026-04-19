@@ -17,6 +17,7 @@ let adj2 = [|
   [4,7];
   [];
 |]
+
 (*Liste d'adjacence pondérée*)
 let (g)= [|
   [(1,1);(2,2)];
@@ -99,131 +100,130 @@ let rec float_assoc a1 l =
   | (e1,e2)::s -> if e1 = a1 then e2 else float_assoc a1 s ;;
 
 
-let parcours_largeur(graphe,s) =
+
+let parcours_largeur graphe init = 
+  let file = Queue.create () in
+  let etats = Array.make (Array.length graphe) false in 
+  let resultat = ref [] in
+  Queue.push init file;
   
-  (*Liste d'etats pour chaque elements du graphe*)
-  let etats = Array.make (Array.length graphe) false in
-  let q = Queue.create () in
+  
+  while not (Queue.is_empty file)  do
+    afficher_file_int file;
+    let elem = Queue.take file in
+    if not etats.(elem) then  
+      begin 
+        etats.(elem) <- true;
+        resultat := elem :: !resultat;
+        List.iter (fun x -> Queue.push x file) graphe.(elem)
+      end
+  done;
+  List.rev !resultat;;
+
+  
+let parcours g u = 
+  let visite = Array.make (Array.length g) false  in
+  let resultat = ref [] in
+  let pile = ref [] in
+  pile := u::!pile;
+  while !pile <> [] do
+    let elem = List.hd !pile in
+    pile := List.tl !pile;
+    
+    if not visite.(elem) then begin
+      
+      visite.(elem) <- true;
+      resultat := elem :: !resultat; 
+      List.iter (fun t -> if not visite.(t) then pile := t::!pile) g.(elem)
+    end;
+    
+  done;
+  List.rev !resultat;;
+
+let parcours_profondeur graphe s =
+  let n = Array.length graphe in
+  let visited = Array.make n false in
   let resultat = ref [] in
 
-  etats.(s) <- true;
-
-  (*Commence à l'element s avec une file*)
-  Queue.push s q ;
+  let rec dfs u =
+    if not visited.(u) then begin
+      visited.(u) <- true;
   
-  while not (Queue.is_empty q)  do
+      (* List.iter remplace ta fonction explore_voisins *)
+      List.iter dfs graphe.(u);
+      resultat := u :: !resultat; 
+    end
+    
+  in
 
-    let k = Queue.take q in 
-    resultat :=  !resultat @ [k];
-    (*On regarde tous les voisins de k, en les marquant visité 
-      puis en les ajoutant à la file*)
-    let rec parcour liste =
-      match liste with
-      |t::s -> if not etats.(t)  then
-            begin
-              etats.(t) <- true;
-              Printf.printf "On push l'element %d " t;
-              
-              Queue.push t q;
+  dfs s;
+  List.rev !resultat
 
-            end;
-          parcour s;
 
-      |[] -> ()
-    in parcour graphe.(k)
+let tri_topo graphe = 
+  let n = Array.length graphe in
+  let visited = Array.make n false in
+  let resultat = ref [] in
+  
+  let parcours_profondeur graphe s = 
+  
+    let rec dfs u =
+      if not visited.(u) then begin
+        visited.(u) <- true; 
+      (* List.iter remplace ta fonction explore_voisins *)
+        List.iter dfs graphe.(u);
+        resultat := u :: !resultat; 
+      end 
+    in 
+    dfs s;
+    
+  in
+  
+  for i = 0 to n-1 do 
+    if not visited.(i) then  parcours_profondeur graphe i; 
   done;
   !resultat;;
-
-  let parcours_profondeurp (graphe,s) =
-  let n = Array.length graphe in
-  let etats = Array.make n false in
-  let p = stack_create () in
-  let resultat = ref [] in
-
-  etats.(s) <- true;
-  stack_push s p;
-
-  while not (stack_is_empty p) do
-    let k = stack_pop p in
-    resultat := !resultat @ [k];
-
-    (* On parcourt les voisins de k en ordre inverse pour bien respecter le DFS *)
-    let voisins = List.rev graphe.(k) in
-    let rec parcour liste = 
-      match liste with
-      | [] -> ()
-      | t :: reste ->
-          if not etats.(t) then 
-            begin
-              etats.(t) <- true;
-              stack_push t p;
-            end;
-          parcour reste
-    in
-    parcour voisins
-  done;
-
-  !resultat
-;;
-
-let parcours_profondeur (graphe,s) =
+        
+let tri_topo2 graphe liste= 
   let n = Array.length graphe in
   let visited = Array.make n false in
   let resultat = ref [] in
-
-  (* Fonction récursive interne *)
-  let rec parcours_profondeur2 u =
-    visited.(u) <- true;
-    resultat := !resultat @ [u];  (* on ajoute u à la liste des visités *)
-
-    (* Parcours explicite des voisins *)
-    let rec explore_voisins voisins =
-      match voisins with
-      | [] -> ()
-      | v :: reste ->
-          if not visited.(v) then parcours_profondeur2 v;
-          explore_voisins reste
-    in
-    explore_voisins graphe.(u)
+  let resultat2 = ref [] in
+  let final = Array.make n [] in
+  
+  let parcours_profondeur graphe s = 
+  
+    let rec dfs u =
+      if not visited.(u) then begin
+        visited.(u) <- true; 
+      (* List.iter remplace ta fonction explore_voisins *)
+        List.iter dfs graphe.(u);
+        resultat := u :: !resultat; 
+        resultat2 := u :: !resultat2; 
+      end 
+    in 
+    dfs s;
+    List.rev !resultat2
   in
-
-  parcours_profondeur2 s;
-  !resultat  (* retourne la liste dans l'ordre de visite *)
-;;
-
-
-
-let tri_topologique graphe =
-  let n = Array.length graphe in
-  let visited = Array.make n false in
-  let tri = ref [] in
-
-  (* Fonction récursive DFS *)
-  let rec parcours_profondeur u =
-    visited.(u) <- true;
-
-    (* Parcours explicite des voisins de u *)
-    let rec explore_voisins voisins =
-      match voisins with
-      | [] -> ()  (* plus de voisins *)
-      | v :: reste ->
-          if not visited.(v) then parcours_profondeur v;
-          explore_voisins reste
-    in
-
-    explore_voisins graphe.(u);
-
-    (* Une fois tous les voisins explorés, on empile u *)
-    tri := u :: !tri
-  in
-
-  (* On lance DFS sur tous les sommets non visités *)
-  for i = 0 to n - 1 do
-    if not visited.(i) then parcours_profondeur i
+  
+  List.iter (fun i -> resultat2 := []; if not visited.(i) then final.(i) <- parcours_profondeur graphe i) liste; 
+  
+  final;;      
+        
+let transpose graphe = 
+  let liste = Array.make  (Array.length graphe) [] in
+  for i = 0 to (Array.length graphe)-1 do
+    List.iter(fun element -> 
+        liste.(element) <- i :: liste.(element)) graphe.(i);
   done;
+  
+  liste;;
+  
 
-  !tri  (* retourne la liste dans l'ordre de visite *)
-;;
+let kosaraju graphe=
+  let graphet = transpose graphe in 
+  let liste = tri_topo graphe in
+  tri_topo2 graphet liste;
 
 let valeur opt =
   match opt with
@@ -312,32 +312,100 @@ let dijkstra (g) s1 =
                     distances.(a1) <- Some(a2 +. t2);
                   end
               end;
+
             mise_a_jour s;
           end;
+
+
     in mise_a_jour lv;
     Printf.printf("\n\n");
   done;
   distances ;;
 
+(* h est une fonction : sommet -> float *)
+let a_star (g) s1 cible h =
+  let n = Array.length g in 
+  let distances = Array.make n None in (* Stocke g(s) *)
+  let visite = Array.make n false in
+  
+  distances.(s1) <- Some(0.);
 
+  let f = ref [] in
+  (* IMPORTANT : La file de priorité trie selon g + h, 
+     mais on stocke aussi g pour les calculs suivants *)
+  f := ajout_file_prio (!f) (s1, 0. +. h s1);
 
-let warshall (adj) = 
-  let n = Array.length(adj) in
-  let min a b = 
-    if a<b then a
-    else b 
-  in
+  while (!f <> []) do
+    (* t1 = sommet, t2 = f(t1) = g(t1) + h(t1) *)
+    let (t1, f_score)::s = !f in
+    f := s;
 
-  for k = 0 to n-1 do
-    for i = 0 to n-1 do
-      for j = 0 to n-1 do 
-        mat_adj.(i).(j) <- min (mat_adj.(i).(j)) (mat_adj.(i).(k) +. mat_adj.(k).(j));
-      done;
+    (* Sortie anticipée si on a atteint la cible *)
+    if t1 = cible then f := []; 
+    
+    if not visite.(t1) then begin
+      visite.(t1) <- true;
+      
+      (* On retrouve g(t1) à partir du tableau des distances *)
+      let Some(g_t1) = distances.(t1) in
+      
+      let rec mise_a_jour l1 =
+        match l1 with
+        | [] -> ()
+        | (a1, poids_arc)::reste ->
+            if not(visite.(a1)) then begin
+              let nouveau_g = g_t1 +. poids_arc in
+              let nouveau_f = nouveau_g +. h a1 in
+
+              match distances.(a1) with
+              | Some(ancien_g) when nouveau_g >= ancien_g -> () (* Pas mieux *)
+              | _ -> 
+                  (* Si c'est mieux ou si c'est la première fois qu'on voit a1 *)
+                  if appartient a1 !f then f := suppr_elt_file_prio !f a1;
+                  
+                  distances.(a1) <- Some(nouveau_g);
+                  f := ajout_file_prio !f (a1, nouveau_f)
+            end;
+            mise_a_jour reste
+      in 
+      mise_a_jour g.(t1);
+    end
+  done;
+  distances ;;
+
+let inf = max_int;;
+let test = [|
+  [| 0;  3;  inf;  7 |]; (* Sommet 0 *)
+  [| 8;  0;  2;  inf |]; (* Sommet 1 *)
+  [| 5;  inf;  0;  1 |]; (* Sommet 2 *)
+  [| 2;  inf;  inf;  0 |]  (* Sommet 3 *) |];;
+  
+  
+let warshall graphe = 
+  let n = Array.length graphe in
+  let next = Array.make_matrix n n None in
+  (*Initialise tableau next*)
+  for i = 0 to n-1 do
+    for j = 0 to n-1 do
+      if graphe.(i).(j) <> inf then next.(i).(j) <- Some(j)
     done;
   done;
   
-  mat_adj
-;;
+  for k = 0 to n-1 do
+    for i = 0 to n-1 do
+      for j = 0 to n-1 do
+        
+        if graphe.(i).(k) <> inf && graphe.(k).(j) <> inf then 
+          if graphe.(i).(j) > graphe.(i).(k) + graphe.(k).(j) then
+            begin
+              graphe.(i).(j) <- graphe.(i).(k) + graphe.(k).(j);
+              next.(i).(j) <- next.(i).(k)
+            end
+      done;
+    done;
+  done;
+  graphe, next
+  
 
 let (g)= [|
   [(1,1);(2,2)];
@@ -424,6 +492,9 @@ let tri_arete liste_adjacence =
   !aretes_trie
 ;;
 
+let triee_par_poids = 
+  List.sort (fun (_, _, p1) (_, _, p2) -> compare p1 p2) liste_aretes;;
+
 let kruskal graphe = 
   let aretes_trie = tri_arete graphe in
   List.iter (fun x -> let e1,e2,e3 = x in Printf.printf "Aretes numero  : (%d,%d,%d)\n"e1 e2 e3 ) !aretes_trie;
@@ -458,40 +529,69 @@ let kruskal graphe =
   List.iter parcours !aretes_trie;
   !aretes_final
   
-let division liste =
-  let n = List.length liste / 2 in
-  let rec div liste n = 
-    match liste with
-    | [] -> ([], []) 
-    | t::s -> if n = 0 then ([],t::s) (* si n = 0, première moitié vide, tout dans la seconde *)
-        else
-          let left, right = div (s) (n-1) in
-          (t :: left, right)
-  in div liste n
-;;
 
-let rec fusion liste1 liste2 = 
-  match liste1,liste2 with 
-  |t1::s1,t2::s2 -> if t2 < t1 then t2 :: fusion (t1::s1) (s2)
-      else t1 :: fusion (s1) (t2::s2)
-  |[],l2 -> l2
-  |l1,[] -> l1
+
+
     
-;;
 
-let rec tri_fusion liste = 
-  let liste1,liste2 = division(liste) in
-  if List.length liste1 = 0 || List.length liste2 = 0 then fusion liste1 liste2
-      
+
+
+
+
+type uf = { parent : int array; rang : int array }
+
+(* Initialisation : chaque élément est son propre chef *)
+let creer_uf n =
+  { parent = Array.init n (fun i -> i);
+    rang = Array.make n 0 }
+
+(* FIND avec compression de chemin *)
+let rec find uf i =
+  if uf.parent.(i) = i then
+    i
+  else begin
+    (* On compresse : le parent devient la racine trouvée récursivement *)
+    uf.parent.(i) <- find uf uf.parent.(i);
+    uf.parent.(i)
+  end
+
+(* UNION par rang *)
+let union uf i j =
+  let root_i = find uf i in
+  let root_j = find uf j in
+  if root_i <> root_j then begin
+    if uf.rang.(root_i) < uf.rang.(root_j) then
+      uf.parent.(root_i) <- root_j
+    else if uf.rang.(root_i) > uf.rang.(root_j) then
+      uf.parent.(root_j) <- root_i
+    else begin
+      uf.parent.(root_i) <- root_j;
+      uf.rang.(root_j) <- uf.rang.(root_j) + 1
+    end;
+    true (* Fusion effectuée *)
+  end 
   else
-    fusion (tri_fusion liste1) (tri_fusion liste2)
-    
-;;
+    false (* Déjà dans le même groupe *)
 
-
-    
-
-
-
-
-
+let kruskal adj =
+  let n = Array.length adj in
+  let liste_aretes = ref [] in
+  for i = 0 to n-1 do 
+    List.iter (fun (s, p) -> if i < s then liste_aretes := (i, s, p) :: !liste_aretes ) adj.(i)
+  done;
+      
+  (* 1. Trier les arêtes par poids croissant *)
+  let aretes_triees = List.sort (fun (_, _, p1) (_, _, p2) -> compare p1 p2) !liste_aretes in
+  
+  (* 2. Initialiser l'Union-Find et la liste du résultat *)
+  let uf = creer_uf n in
+  let liste = ref [] in
+  
+  (* 3. Parcourir les arêtes *)
+  List.iter (fun (u, v, p) ->
+    (* Si l'union réussit, c'est que u et v n'étaient pas connectés *)
+      if union uf u v then
+        liste := (u, v, p) :: !liste
+    ) aretes_triees;
+  
+  !liste (* Retourne l'Arbre Couvrant Minimum *)
